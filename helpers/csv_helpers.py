@@ -246,7 +246,7 @@ def make_state_row(feature, item, item_options):
     })
     return item
 
-def make_zcta5_row(item, feature, geo_type):
+def make_zcta5_row(feature, item, geo_type, item_options):
     # Zip Code Tabulation Area shapefiles have attrs named differently
     _sumlev = '860'
     _geoid = feature.GetField("GEOID10")
@@ -262,5 +262,10 @@ def make_zcta5_row(item, feature, geo_type):
         'INTPTLAT': feature.GetField("INTPTLAT10"),
         'INTPTLON': feature.GetField("INTPTLON10"),
     })
+    if item_options['include_polygon']:
+        _geom = feature.GetGeometryRef()
+        item.update({
+            'GEOMETRY': str(_geom),
+        })
     return item
 

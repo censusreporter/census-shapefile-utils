@@ -17,6 +17,9 @@ by passing a -p flag.
 
 >> python parse_shapefiles.py -s WA -p
 
+Geometry data for certain geography types can be *very* large. The `zcta5`
+geometries, for instance, will add about 1.1 Gb of data to your csv.
+
 The csv files you generate will be written to `CSV_DIR`. A common set
 of headers is pulled from `helpers/csv_helpers.py`, so varying geography
 types can be included in the same csv. Methods specific to building a proper
@@ -112,7 +115,10 @@ def build_dict_list(filename, state=None, geo_type=None):
         item = {}
         if geo_type == 'zcta5':
             # ZCTA shapefiles have different attribute names
-            item = csv_helpers.make_zcta5_row(item, feature, geo_type)
+            _item_options = {
+                'include_polygon': options.include_polygon,
+            }
+            item = csv_helpers.make_zcta5_row(feature, item, geo_type, _item_options)
         else:
             # All other geo_types share attribute names
             # Filter rows by state if -s arg is passed
