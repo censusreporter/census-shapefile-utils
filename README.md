@@ -43,7 +43,12 @@ by geography type.
     >> python parse_shapefiles.py -s WA -g place
 
 You can choose whether the generated csv should include polygon geometries,
-which increases the size of the output file significantly. Include geometries
+which increase the size of the output file significantly. Include geometries
 by passing a -p flag.
 
     >> python parse_shapefiles.py -s WA -p
+
+The csv files you generate will be written to `CSV_DIR`. A common set
+of headers is pulled from `helpers/csv_helpers.py`, so varying geography
+types can be included in the same csv. Methods specific to building a proper
+row for each geography type are also found in `csv_helpers`.
