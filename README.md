@@ -27,6 +27,10 @@ in `GEO_TYPES_LIST` specifically, however. So to fetch the ZCTA data:
 
     >> python fetch_shapefiles.py -g zcta5
 
+The `FTP_HOME` setting at the top of `fetch_shapefiles.py` assumes you want
+data from the TIGER2012 directory. If you want a different set of shapefiles,
+adjust this accordingly.
+
 
 ### parse_shapefiles.py ###
 

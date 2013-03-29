@@ -19,6 +19,9 @@ Tabulation Areas, are extremely large. You can still target any geography
 in `GEO_TYPES_LIST` specifically, however. So to fetch the ZCTA data:
 
 >> python fetch_shapefiles.py -g zcta5
+
+The `FTP_HOME` setting assumes you want data from the TIGER2012 directory.
+If you want a different set of shapefiles, adjust this accordingly.
 '''
 
 import sys, optparse, os, traceback, urllib2, zipfile
