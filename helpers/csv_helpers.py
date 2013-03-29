@@ -254,6 +254,7 @@ def make_zcta5_row(feature, item, geo_type, item_options):
     item.update({
         'FULL_GEOID': '%s|%s' % (_sumlev, _geoid),
         'FULL_NAME': 'ZIP Code: %s' % _name,
+        'SUMLEV': _sumlev,
         'GEO_TYPE': geo_type,
         'GEOID': _geoid,
         'CLASSFP': feature.GetField("CLASSFP10"),
