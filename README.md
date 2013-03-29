@@ -35,7 +35,7 @@ from the extracted data. It will search all directories inside `EXTRACT_DIR`
 to find shapefiles.
 
 Pass an -s argument to limit by state, and pass a -g argument to limit
-by geography type.
+to a single geography type.
 
     >> python parse_shapefiles.py
     >> python parse_shapefiles.py -s WA
@@ -47,6 +47,9 @@ which increase the size of the output file significantly. Include geometries
 by passing a -p flag.
 
     >> python parse_shapefiles.py -s WA -p
+
+Geometry data for certain geography types can be *very* large. The `zcta5`
+geometries, for instance, will add about 1.1 Gb of data to your csv.
 
 The csv files you generate will be written to `CSV_DIR`. A common set
 of headers is pulled from `helpers/csv_helpers.py`, so varying geography
