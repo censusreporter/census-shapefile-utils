@@ -8,6 +8,10 @@ or can be used to fetch files for a single state and/or single geography type.
 >> python fetch_shapefiles.py -g place
 >> python fetch_shapefiles.py -s WA -g place
 
+If you use the -s argument to fetch files for a single state, the script
+will also download the national county, state and congressional district
+files that include data for your chosen state.
+
 This will create DOWNLOAD_DIR and EXTRACT_DIR if necessary, fetch a zipfile
 or set of zipfiles from the Census website, then extract the shapefiles from
 each zipfile retrieved.
