@@ -118,7 +118,7 @@ def make_foo_row(feature, item, item_options):
 '''
 
 def _build_full_geoid(sumlev, item_options):
-    return '%s|%s' % (sumlev, item_options['geoid'])
+    return '%s%sUS%s' % (sumlev, '00', item_options['geoid'])
 
 def make_cd_row(feature, item, item_options):
     _sumlev = '500'
