@@ -42,6 +42,7 @@ geometries, for instance, will add about 1.1 Gb of data to your csv.
 '''
 
 import csv, optparse, os, sys, traceback
+import glob
 from operator import itemgetter
 from os.path import isdir, join, normpath
 from osgeo import ogr
@@ -52,9 +53,11 @@ from helpers import csv_helpers
 
 
 def get_shapefile_directory_list(state=None, geo_type=None):
+    _, directories, _ = next(os.walk(EXTRACT_DIR))
     shapefile_directory_list = [
-        os.path.join(EXTRACT_DIR, directory) \
-        for directory in os.walk(EXTRACT_DIR).next()[1]
+        os.path.join(EXTRACT_DIR, directory)
+        for directory in directories
+        if len(glob.glob(os.path.join(EXTRACT_DIR, directory, '*.shp'))) > 0
     ]
 
     if geo_type:
@@ -85,8 +88,9 @@ def get_shapefile_directory_list(state=None, geo_type=None):
 
 def _get_shapefile_from_dir(shapefile_directory):
     for filename in os.listdir(shapefile_directory):
-        if filename.endswith('.shp'):
+        if filename.lower().endswith('.shp'):
             return normpath(join(shapefile_directory, filename))
+    raise Exception('No .shp file found in %s' % shapefile_directory)
 
 
 def _get_geo_type_from_file(filename):
