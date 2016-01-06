@@ -29,8 +29,11 @@ in GEO_TYPES_LIST specifically, however. So to fetch the ZCTA data:
     >> python fetch_shapefiles.py -g zcta5
 '''
 
-import sys, optparse, os, traceback, urllib2, zipfile
-from os.path import isdir, join, normpath, split
+import optparse
+import os
+import sys
+import zipfile
+from os.path import isdir, join, normpath
 
 try:
     from six.moves.urllib import request as urllib2
@@ -55,8 +58,10 @@ def get_filename_list_from_ftp(target, state):
     if state:
         state_check = '_%s_' % get_fips_code_for_state(state)
         filename_list = filter(
-            lambda filename: state_check in filename \
-            or ('_us_' in filename and '_us_zcta5' not in filename),
+            lambda filename:
+                state_check in filename or
+                ('_us_' in filename and
+                 '_us_zcta5' not in filename),
             filename_list
         )
 

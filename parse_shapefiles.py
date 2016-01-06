@@ -26,7 +26,7 @@ to a single geography type.
     >> python parse_shapefiles.py -s WA
     >> python parse_shapefiles.py -g place
     >> python parse_shapefiles.py -s WA -g place
-    
+
 This script will generate a single csv file with your chosen data, and write
 it to `CSV_DIR`. Headers are pulled from `helpers/csv_helpers.py`. The methods
 for building rows specific to each geography type are also in `csv_helpers`.
@@ -62,7 +62,7 @@ def get_shapefile_directory_list(state=None, geo_type=None):
 
     if geo_type:
         # handle cd112, cd113, zcta5, etc.
-        if geo_type in ['cd','zcta5']:
+        if geo_type in ['cd', 'zcta5']:
             geo_type_check = '_us_%s' % geo_type
             shapefile_directory_list = filter(
                 lambda directory: geo_type_check in directory,
@@ -74,12 +74,13 @@ def get_shapefile_directory_list(state=None, geo_type=None):
                 lambda directory: directory.endswith(geo_type_check),
                 shapefile_directory_list
             )
-    
+
     if state:
         state_check = '_%s_' % get_fips_code_for_state(state)
         shapefile_directory_list = filter(
-            lambda directory: state_check in directory \
-            or ('_us_' in directory and '_us_zcta5' not in directory),
+            lambda directory:
+                state_check in directory or
+                ('_us_' in directory and '_us_zcta5' not in directory),
             shapefile_directory_list
         )
 
@@ -117,7 +118,7 @@ def parse_shapefiles(shapefile_directory_list, state=None, geo_type=None,
             _shapefile, state=state, geo_type=_geo_type,
             include_polygon=include_polygon)
         data_dicts.extend(_shapefile_data)
-        
+
     output_geo = geo_type if geo_type else 'all_geographies'
     output_state = '_%s' % state if state else ''
     output_filename = '%s%s.csv' % (output_geo, output_state)
@@ -142,7 +143,8 @@ def build_dict_list(filename, state=None, geo_type=None,
             _item_options = {
                 'include_polygon': include_polygon,
             }
-            item = csv_helpers.make_zcta5_row(feature, item, geo_type, _item_options)
+            item = csv_helpers.make_zcta5_row(
+                feature, item, geo_type, _item_options)
         else:
             # All other geo_types share attribute names
             # Filter rows by state if -s arg is passed
@@ -154,7 +156,7 @@ def build_dict_list(filename, state=None, geo_type=None,
                     'geoid': feature.GetField("GEOID"),
                     'state_dict': STATE_FIPS_DICT[str(_statefp)],
                 }
-                
+
                 item = csv_helpers.make_basic_row(feature, item, geo_type, _item_options)
                 if geo_type:
                     row_builder = getattr(csv_helpers, 'make_%s_row' % geo_type)
@@ -164,7 +166,7 @@ def build_dict_list(filename, state=None, geo_type=None,
             dict_list.append(item)
         feature.Destroy()
         feature = layer.GetNextFeature()
-        
+
     shapefile.Destroy()
 
     return dict_list
@@ -227,7 +229,7 @@ def main(args=None):
     options, args = process_options(args)
 
     # make sure we have the expected directories
-    for path in [CSV_DIR,]:
+    for path in (CSV_DIR, ):
         if not isdir(path):
             os.makedirs(path)
 
