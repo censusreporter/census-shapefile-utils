@@ -16,7 +16,7 @@ GEO_TYPES_DICT = {
 }
 
 GEO_TYPES_LIST = sorted([
-    key for key, value in GEO_TYPES_DICT.iteritems()
+    key for key, value in GEO_TYPES_DICT.items()
 ])
 
 # The zcta5 file is 500 Mb. DISABLE_AUTO_DOWNLOADS prevents it from being
@@ -311,14 +311,14 @@ STATE_FIPS_DICT = {
 
 
 def get_fips_code_for_state(state):
-    for key, state_dict in STATE_FIPS_DICT.iteritems():
+    for key, state_dict in STATE_FIPS_DICT.items():
         if state_dict['abbreviation'] == state.upper()\
         or state_dict['name'].upper() == state.upper():
             return key
 
 
 STATE_ABBREV_LIST = sorted([
-    state['abbreviation'] for fips, state in STATE_FIPS_DICT.iteritems()
+    state['abbreviation'] for fips, state in STATE_FIPS_DICT.items()
 ])
 
 
