@@ -66,7 +66,6 @@ def download_files_in_list(filename_list):
         meta = u.info()
         file_size = int(meta.getheaders("Content-Length")[0])
 
-        print "Downloading: %s Bytes: %s" % (filename, file_size)
         file_size_dl = 0
         block_sz = 8192
         while True:
@@ -81,6 +80,7 @@ def download_files_in_list(filename_list):
             print status,
 
         f.close()
+            print("Downloading: %s Bytes: %s" % (filename, file_size))
         downloaded_filename_list.append(filename)
     
     return downloaded_filename_list
@@ -91,7 +91,7 @@ def extract_downloaded_file(filename):
     zip_dir = filename.replace('.zip','').split('/')[-1]
     target_dir = normpath(join(EXTRACT_DIR, zip_dir))
 
-    print "Extracting: " + filename + " ..."
+    print("Extracting: " + filename + " ...")
     zipped.extractall(target_dir)
     zipped.close()
 
@@ -99,7 +99,7 @@ def extract_downloaded_file(filename):
 def get_one_geo_type(geo_type, state=None, year='2012'):
     target = '%s%s/' % (FTP_HOME.replace('2012', year), geo_type.upper())
 
-    print "Finding files in: " + target + " ..."
+    print("Finding files in: " + target + " ...")
     filename_list = get_filename_list_from_ftp(target, state)
     downloaded_filename_list = download_files_in_list(filename_list)
 

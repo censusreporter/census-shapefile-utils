@@ -111,8 +111,8 @@ def parse_shapefiles(shapefile_directory_list, state=None, geo_type=None,
     for shapefile_directory in shapefile_directory_list:
         _shapefile = _get_shapefile_from_dir(shapefile_directory)
         _geo_type = _get_geo_type_from_file(_shapefile)
-        
-        print "Parsing: " + _shapefile + " ..."
+
+        print("Parsing: " + _shapefile + " ...")
         _shapefile_data = build_dict_list(
             _shapefile, state=state, geo_type=_geo_type,
             include_polygon=include_polygon)
@@ -174,9 +174,8 @@ def write_csv(filename, dict_list, include_polygon=False):
     csvfilename = os.path.basename(filename).replace('.shp', '.csv')
     csvpath = normpath(join(CSV_DIR, csvfilename))
     csvfile = open(csvpath, 'w')
-    
-    print "Writing: " + csvpath + " ...\n"
-    
+
+    print("Writing: " + csvpath + " ...\n")
     csvwriter = csv.DictWriter(
         csvfile,
         csv_helpers.get_fields_for_csv(include_polygon=include_polygon),
