@@ -2,30 +2,31 @@
 This script will download TIGER data shapefiles from the Census FTP site.
 It can be used to download a set of geographies defined in GEO_TYPES_LIST,
 or can be used to fetch files for a single state and/or single geography type.
+Pass an -s argument to limit by state, pass a -g argument to limit
+to a single geography type, and/or pass a -y argument to change the year
+from 2012 to something else (e.g. 2015).
 
->> python fetch_shapefiles.py
->> python fetch_shapefiles.py -s WA
->> python fetch_shapefiles.py -g place
->> python fetch_shapefiles.py -s WA -g place
+    >> python fetch_shapefiles.py
+    >> python fetch_shapefiles.py -s WA
+    >> python fetch_shapefiles.py -g place
+    >> python fetch_shapefiles.py -y 2015
+    >> python fetch_shapefiles.py -s WA -g place -y 2015
 
 If you use the -s argument to fetch files for a single state, the script
 will also download the national county, state and congressional district
 files that include data for your chosen state.
 
-This will create DOWNLOAD_DIR and EXTRACT_DIR if necessary, fetch a zipfile
-or set of zipfiles from the Census website, then extract the shapefiles from
-each zipfile retrieved.
+The script will create DOWNLOAD_DIR and EXTRACT_DIR directories
+if necessary, fetch a zipfile or set of zipfiles from the Census website,
+then extract the shapefiles from each zipfile retrieved.
 
-`DISABLE_AUTO_DOWNLOADS` will prevent certain geography types from being
-automatically downloaded if no -g argument is passed to `fetch_shapefiles.py`.
+DISABLE_AUTO_DOWNLOADS will prevent certain geography types from being
+automatically downloaded if no -g argument is passed to fetch_shapefiles.py.
 This may be useful because certain files, such as those for Zip Code
 Tabulation Areas, are extremely large. You can still target any geography
-in `GEO_TYPES_LIST` specifically, however. So to fetch the ZCTA data:
+in GEO_TYPES_LIST specifically, however. So to fetch the ZCTA data:
 
->> python fetch_shapefiles.py -g zcta5
-
-The `FTP_HOME` setting assumes you want data from the TIGER2012 directory.
-If you want a different set of shapefiles, adjust this accordingly.
+    >> python fetch_shapefiles.py -g zcta5
 '''
 
 import sys, optparse, os, traceback, urllib2, zipfile
@@ -95,8 +96,8 @@ def extract_downloaded_file(filename):
     zipped.close()
 
 
-def get_one_geo_type(geo_type, state=None):
-    target = '%s%s/' % (FTP_HOME, geo_type.upper())
+def get_one_geo_type(geo_type, state=None, year='2012'):
+    target = '%s%s/' % (FTP_HOME.replace('2012', year), geo_type.upper())
 
     print "Finding files in: " + target + " ..."
     filename_list = get_filename_list_from_ftp(target, state)
@@ -106,13 +107,13 @@ def get_one_geo_type(geo_type, state=None):
         extract_downloaded_file(filename)
 
 
-def get_all_geo_types(state=None):
+def get_all_geo_types(state=None, year='2012'):
     AUTO_DOWNLOADS = filter(
         lambda geo_type: geo_type not in DISABLE_AUTO_DOWNLOADS,
         GEO_TYPES_LIST
     )
     for geo_type in AUTO_DOWNLOADS:
-        get_one_geo_type(geo_type, state)
+        get_one_geo_type(geo_type, state, year)
 
 
 def process_options(arglist=None):
@@ -122,15 +123,23 @@ def process_options(arglist=None):
         '-s', '--state',
         dest='state',
         help='specific state to download',
-        choices=STATE_ABBREV_LIST
+        choices=STATE_ABBREV_LIST,
+        default=None
     )
     parser.add_option(
         '-g', '--geo', '--geo_type',
         dest='geo_type',
         help='specific geographic type to download',
-        choices=GEO_TYPES_LIST
+        choices=GEO_TYPES_LIST,
+        default=None
     )
-    
+    parser.add_option(
+        '-y', '--year',
+        dest='year',
+        help='specific year to download',
+        default='2012'
+    )
+
     options, args = parser.parse_args(arglist)
     return options, args
 
@@ -145,24 +154,23 @@ def main(args=None):
     if args is None:
         args = sys.argv[1:]
     options, args = process_options(args)
-    
+
     # make sure we have the expected directories
     for path in [DOWNLOAD_DIR, EXTRACT_DIR]:
         if not isdir(path):
             os.mkdir(path)
 
-    state = options.state if options.state else None
-    geo_type = options.geo_type if options.geo_type else None
-    
     # get one geo_type or all geo_types
-    if geo_type:
+    if options.geo_type:
         get_one_geo_type(
-            geo_type = geo_type,
-            state = state,
+            geo_type = options.geo_type,
+            state = options.state,
+            year=options.year
         )
     else:
         get_all_geo_types(
-            state = state,
+            state = options.state,
+            year=options.year
         )
 
 
