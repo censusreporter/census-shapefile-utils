@@ -9,11 +9,15 @@ data from them.
 This script will download TIGER data shapefiles from the Census FTP site.
 It can be used to download a set of geographies defined in `GEO_TYPES_LIST`,
 or can be used to fetch files for a single state and/or single geography type.
+Pass an -s argument to limit by state, pass a -g argument to limit
+to a single geography type, and/or pass a -y argument to change the year
+from 2012 to something else (e.g. 2015).
 
     >> python fetch_shapefiles.py
     >> python fetch_shapefiles.py -s WA
     >> python fetch_shapefiles.py -g place
-    >> python fetch_shapefiles.py -s WA -g place
+    >> python fetch_shapefiles.py -y 2015
+    >> python fetch_shapefiles.py -s WA -g place -y 2015
 
 If you use the -s argument to fetch files for a single state, the script
 will also download the national county, state and congressional district
@@ -30,10 +34,6 @@ Tabulation Areas, are extremely large. You can still target any geography
 in `GEO_TYPES_LIST` specifically, however. So to fetch the ZCTA data:
 
     >> python fetch_shapefiles.py -g zcta5
-
-The `FTP_HOME` setting at the top of `fetch_shapefiles.py` assumes you want
-data from the TIGER2012 directory. If you want a different set of shapefiles,
-adjust this accordingly.
 
 
 ### parse_shapefiles.py ###
@@ -65,7 +65,7 @@ to a single geography type.
     >> python parse_shapefiles.py -s WA
     >> python parse_shapefiles.py -g place
     >> python parse_shapefiles.py -s WA -g place
-    
+
 This script will generate a single csv file with your chosen data, and write
 it to `CSV_DIR`. Headers are pulled from `helpers/csv_helpers.py`. The methods
 for building rows specific to each geography type are also in `csv_helpers`.
