@@ -149,7 +149,7 @@ def main(args=None):
     # make sure we have the expected directories
     for path in [DOWNLOAD_DIR, EXTRACT_DIR]:
         if not isdir(path):
-            os.mkdir(path)
+            os.makedirs(path)
 
     state = options.state if options.state else None
     geo_type = options.geo_type if options.geo_type else None
@@ -167,11 +167,4 @@ def main(args=None):
 
 
 if __name__ == '__main__':
-    try:
-        main()
-    except Exception, e:
-        sys.stderr.write('\n')
-        traceback.print_exc(file=sys.stderr)
-        sys.stderr.write('\n')
-        sys.exit(1)
-
+    main()
