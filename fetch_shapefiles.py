@@ -43,7 +43,7 @@ def get_filename_list_from_ftp(target, state):
     filename_list = []
 
     for line in target_files:
-        filename = '%s%s' % (target, line.split()[-1])
+        filename = '%s%s' % (target, line.decode().split()[-1])
         filename_list.append(filename)
 
     if state:

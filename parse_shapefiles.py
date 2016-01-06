@@ -173,7 +173,7 @@ def build_dict_list(filename, state=None, geo_type=None,
 def write_csv(filename, dict_list, include_polygon=False):
     csvfilename = os.path.basename(filename).replace('.shp', '.csv')
     csvpath = normpath(join(CSV_DIR, csvfilename))
-    csvfile = open(csvpath,'wb')
+    csvfile = open(csvpath, 'w')
     
     print "Writing: " + csvpath + " ...\n"
     
