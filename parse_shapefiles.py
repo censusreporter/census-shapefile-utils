@@ -42,6 +42,7 @@ geometries, for instance, will add about 1.1 Gb of data to your csv.
 '''
 
 import csv, optparse, os, sys, traceback
+import glob
 from operator import itemgetter
 from os.path import isdir, join, normpath
 from osgeo import ogr
@@ -52,9 +53,11 @@ from helpers import csv_helpers
 
 
 def get_shapefile_directory_list(state=None, geo_type=None):
+    _, directories, _ = next(os.walk(EXTRACT_DIR))
     shapefile_directory_list = [
-        os.path.join(EXTRACT_DIR, directory) \
-        for directory in os.walk(EXTRACT_DIR).next()[1]
+        os.path.join(EXTRACT_DIR, directory)
+        for directory in directories
+        if len(glob.glob(os.path.join(EXTRACT_DIR, directory, '*.shp'))) > 0
     ]
 
     if geo_type:
@@ -85,8 +88,9 @@ def get_shapefile_directory_list(state=None, geo_type=None):
 
 def _get_shapefile_from_dir(shapefile_directory):
     for filename in os.listdir(shapefile_directory):
-        if filename.endswith('.shp'):
+        if filename.lower().endswith('.shp'):
             return normpath(join(shapefile_directory, filename))
+    raise Exception('No .shp file found in %s' % shapefile_directory)
 
 
 def _get_geo_type_from_file(filename):
@@ -101,37 +105,42 @@ def _get_geo_type_from_file(filename):
     return geo_type
 
 
-def parse_shapefiles(shapefile_directory_list, state=None, geo_type=None):
+def parse_shapefiles(shapefile_directory_list, state=None, geo_type=None,
+                     include_polygon=False):
     data_dicts = []
     for shapefile_directory in shapefile_directory_list:
         _shapefile = _get_shapefile_from_dir(shapefile_directory)
         _geo_type = _get_geo_type_from_file(_shapefile)
         
         print "Parsing: " + _shapefile + " ..."
-        _shapefile_data = build_dict_list(_shapefile, state, _geo_type)
+        _shapefile_data = build_dict_list(
+            _shapefile, state=state, geo_type=_geo_type,
+            include_polygon=include_polygon)
         data_dicts.extend(_shapefile_data)
         
     output_geo = geo_type if geo_type else 'all_geographies'
     output_state = '_%s' % state if state else ''
     output_filename = '%s%s.csv' % (output_geo, output_state)
     sorted_data_dicts = sorted(data_dicts, key=itemgetter('FULL_GEOID'))
-    
-    write_csv(output_filename, sorted_data_dicts)
+
+    write_csv(output_filename, sorted_data_dicts,
+              include_polygon=include_polygon)
 
 
-def build_dict_list(filename, state=None, geo_type=None):
+def build_dict_list(filename, state=None, geo_type=None,
+                    include_polygon=False):
     shapefile = ogr.Open(filename)
     layer = shapefile.GetLayer()
     state_check = get_fips_code_for_state(state) if state else None
     dict_list = []
-    
+
     feature = layer.GetNextFeature()
     while feature:
         item = {}
         if geo_type == 'zcta5':
             # ZCTA shapefiles have different attribute names
             _item_options = {
-                'include_polygon': options.include_polygon,
+                'include_polygon': include_polygon,
             }
             item = csv_helpers.make_zcta5_row(feature, item, geo_type, _item_options)
         else:
@@ -141,7 +150,7 @@ def build_dict_list(filename, state=None, geo_type=None):
             if not state_check or (state_check == _statefp):
                 _item_options = {
                     'statefp': _statefp,
-                    'include_polygon': options.include_polygon,
+                    'include_polygon': include_polygon,
                     'geoid': feature.GetField("GEOID"),
                     'state_dict': STATE_FIPS_DICT[str(_statefp)],
                 }
@@ -161,7 +170,7 @@ def build_dict_list(filename, state=None, geo_type=None):
     return dict_list
 
 
-def write_csv(filename, dict_list):
+def write_csv(filename, dict_list, include_polygon=False):
     csvfilename = os.path.basename(filename).replace('.shp', '.csv')
     csvpath = normpath(join(CSV_DIR, csvfilename))
     csvfile = open(csvpath,'wb')
@@ -170,9 +179,7 @@ def write_csv(filename, dict_list):
     
     csvwriter = csv.DictWriter(
         csvfile,
-        csv_helpers.get_fields_for_csv(
-            include_polygon=options.include_polygon
-        ),
+        csv_helpers.get_fields_for_csv(include_polygon=include_polygon),
         quoting=csv.QUOTE_ALL
     )
     csvwriter.writeheader()
@@ -187,12 +194,14 @@ def process_options(arglist=None):
     parser.add_option(
         '-s', '--state',
         dest='state',
+        default=None,
         help='specific state file to convert',
         choices=STATE_ABBREV_LIST,
     )
     parser.add_option(
         '-g', '--geo', '--geo_type',
         dest='geo_type',
+        default=None,
         help='specific geographic type to convert',
         choices=GEO_TYPES_LIST
     )
@@ -223,18 +232,16 @@ def main(args=None):
         if not isdir(path):
             os.makedirs(path)
 
-    state = options.state if options.state else None
-    geo_type = options.geo_type if options.geo_type else None
-
     shapefile_directory_list = get_shapefile_directory_list(
-        state = state,
-        geo_type = geo_type,
+        state=options.state,
+        geo_type=options.geo_type,
     )
 
     parse_shapefiles(
         shapefile_directory_list,
-        state = state,
-        geo_type = geo_type,
+        state=options.state,
+        geo_type=options.geo_type,
+        include_polygon=options.include_polygon
     )
 
 
