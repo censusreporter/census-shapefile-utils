@@ -4,6 +4,14 @@ census-shapefile-utils
 Tools for fetching shapefiles from the Census FTP site, then extracting
 data from them.
 
+### Installation ###
+
+1. Clone this repository: `git@github.com:censusreporter/census-shapefile-utils.git`
+2. Enter the `census-shapefile-utils` directory.
+3. *If using `parse_shapefiles.py`*, then install dependencies: `pip install -r requirements.txt`
+    * Note: package `gdal` requires non-Python library, `libgdal`. Follow OS-specific installation to obtain this library.
+
+
 ### fetch_shapefiles.py ###
 
 This script will download TIGER data shapefiles from the Census FTP site.
