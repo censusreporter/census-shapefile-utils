@@ -29,11 +29,20 @@ in GEO_TYPES_LIST specifically, however. So to fetch the ZCTA data:
     >> python fetch_shapefiles.py -g zcta5
 '''
 
-import sys, optparse, os, traceback, urllib2, zipfile
-from os.path import isdir, join, normpath, split
+import optparse
+import os
+import sys
+import zipfile
+from os.path import isdir, join, normpath
 
-from __init__ import (DOWNLOAD_DIR, EXTRACT_DIR, STATE_ABBREV_LIST, \
-    GEO_TYPES_LIST, DISABLE_AUTO_DOWNLOADS, get_fips_code_for_state)
+try:
+    from six.moves.urllib import request as urllib2
+except ImportError:
+    import urllib2
+
+from __init__ import (DOWNLOAD_DIR, EXTRACT_DIR, STATE_ABBREV_LIST,
+                      GEO_TYPES_LIST, DISABLE_AUTO_DOWNLOADS,
+                      get_fips_code_for_state)
 
 FTP_HOME = 'ftp://ftp2.census.gov/geo/tiger/TIGER2012/'
 
@@ -43,55 +52,76 @@ def get_filename_list_from_ftp(target, state):
     filename_list = []
 
     for line in target_files:
-        filename = '%s%s' % (target, line.split()[-1])
+        filename = '%s%s' % (target, line.decode().split()[-1])
         filename_list.append(filename)
 
     if state:
         state_check = '_%s_' % get_fips_code_for_state(state)
         filename_list = filter(
-            lambda filename: state_check in filename \
-            or ('_us_' in filename and '_us_zcta5' not in filename),
+            lambda filename:
+                state_check in filename or
+                ('_us_' in filename and
+                 '_us_zcta5' not in filename),
             filename_list
         )
 
     return filename_list
 
 
-def download_files_in_list(filename_list):
+def get_content_length(u):
+    # u is returned by urllib2.urlopen
+    if sys.version_info[0] == 2:
+        return int(u.info().getheader("Content-Length"))
+    else:
+        return int(u.headers["Content-Length"])
+
+
+def download_files_in_list(filename_list, force=False):
     downloaded_filename_list = []
     for file_location in filename_list:
         filename = '%s/%s' % (DOWNLOAD_DIR, file_location.split('/')[-1])
-        u = urllib2.urlopen(file_location)
-        f = open(filename, 'wb')
-        meta = u.info()
-        file_size = int(meta.getheaders("Content-Length")[0])
+        if force or not os.path.exists(filename):
+            # Only download if required.
+            u = urllib2.urlopen(file_location)
+            f = open(filename, 'wb')
+            file_size = get_content_length(u)
 
-        print "Downloading: %s Bytes: %s" % (filename, file_size)
-        file_size_dl = 0
-        block_sz = 8192
-        while True:
-            buffer = u.read(block_sz)
-            if not buffer:
-                break
+            print("Downloading: %s Bytes: %s" % (filename, file_size))
+            file_size_dl = 0
+            block_sz = 8192
+            while True:
+                buffer = u.read(block_sz)
+                if not buffer:
+                    break
 
-            file_size_dl += len(buffer)
-            f.write(buffer)
-            status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
-            status = status + chr(8)*(len(status)+1)
-            print status,
+                file_size_dl += len(buffer)
+                f.write(buffer)
+                status = r"%10d  [%3.2f%%]" % (
+                    file_size_dl, file_size_dl * 100. / file_size)
+                status = status + chr(8) * (len(status) + 1)
+                sys.stdout.write(status)
+                sys.stdout.flush()
 
-        f.close()
+            f.close()
         downloaded_filename_list.append(filename)
-    
-    return downloaded_filename_list
-    
 
-def extract_downloaded_file(filename):
-    zipped = zipfile.ZipFile(filename, 'r')
-    zip_dir = filename.replace('.zip','').split('/')[-1]
+    return downloaded_filename_list
+
+
+def extract_downloaded_file(filename, remove_on_error=True):
+    zip_dir = filename.replace('.zip', '').split('/')[-1]
     target_dir = normpath(join(EXTRACT_DIR, zip_dir))
 
-    print "Extracting: " + filename + " ..."
+    print("Extracting: " + filename + " ...")
+    try:
+        zipped = zipfile.ZipFile(filename, 'r')
+    except zipfile.BadZipFile as ze:
+        if remove_on_error:
+            os.remove(filename)
+            raise Exception(
+                "Removed corrupt zip file (%s). Retry download." % filename)
+        raise ze
+
     zipped.extractall(target_dir)
     zipped.close()
 
@@ -99,7 +129,7 @@ def extract_downloaded_file(filename):
 def get_one_geo_type(geo_type, state=None, year='2012'):
     target = '%s%s/' % (FTP_HOME.replace('2012', year), geo_type.upper())
 
-    print "Finding files in: " + target + " ..."
+    print("Finding files in: " + target + " ...")
     filename_list = get_filename_list_from_ftp(target, state)
     downloaded_filename_list = download_files_in_list(filename_list)
 
